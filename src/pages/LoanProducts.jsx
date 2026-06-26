@@ -8,17 +8,17 @@ const LoanProducts = () => {
   const products = [
     {
       name: 'Personal Loan',
-      amount: 'Up to 10M TZS',
-      rate: '12% - 18% APR',
-      term: '6 - 24 months',
+      amount: 'Up to 1M TZS',
+      rate: '10% - 15% APR',
+      term: '1 - 9 months',
       description: 'For personal expenses, education, home improvement, and more.',
       color: 'blue'
     },
     {
       name: 'Business Loan',
-      amount: 'Up to 50M TZS',
-      rate: '10% - 16% APR',
-      term: '12 - 48 months',
+      amount: 'Up to 5M TZS',
+      rate: '15 - 20% APR',
+      term: '1 - 12 months',
       description: 'Grow your business with flexible working capital and investment loans.',
       color: 'purple'
     },
@@ -26,15 +26,15 @@ const LoanProducts = () => {
       name: 'Micro Loan',
       amount: 'Up to 2M TZS',
       rate: '8% - 14% APR',
-      term: '3 - 12 months',
+      term: '1 - 12 months',
       description: 'Quick and easy small loans for immediate financial needs.',
       color: 'green'
     },
     {
       name: 'Group Loan',
-      amount: 'Up to 25M TZS',
+      amount: 'Up to 10M TZS',
       rate: '9% - 15% APR',
-      term: '12 - 36 months',
+      term: '6 - 24 months',
       description: 'Perfect for community groups, SMEs, and cooperative members.',
       color: 'orange'
     }
