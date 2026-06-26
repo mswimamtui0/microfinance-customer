@@ -6,7 +6,9 @@ import {
   EnvelopeIcon, 
   MapPinIcon,
   FaceSmileIcon
-} from '@heroicons/react/24/outline';
+} 
+
+from '@heroicons/react/24/outline';
 
 const PublicFooter = () => {
   const currentYear = new Date().getFullYear();
