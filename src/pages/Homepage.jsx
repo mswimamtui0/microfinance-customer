@@ -230,63 +230,83 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* Loan Products Section - No Icons */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="text-sm font-semibold text-primary-600 uppercase tracking-wider">Our Products</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">
-              Loan <span className="text-primary-600">Products</span>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Choose from a variety of loan products designed to meet your financial needs.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {loanProducts.map((product, index) => (
-              <div 
-                key={index} 
-                className={`relative rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border ${product.border} ${product.bgLight} bg-white overflow-hidden group`}
-              >
-                {/* Top Accent Bar */}
-                <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${product.gradient}`}></div>
-                
-                {/* Decorative Circle */}
-                <div className={`absolute -top-10 -right-10 w-24 h-24 rounded-full ${product.bgLight} opacity-30 group-hover:scale-150 transition-transform duration-500`}></div>
-                
-                {/* Product Number instead of Icon */}
-                <div className={`relative z-10 w-14 h-14 rounded-xl bg-gradient-to-r ${product.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                  <span className="text-white text-xl font-bold">{String(index + 1).padStart(2, '0')}</span>
-                </div>
-                
-                <h3 className="relative z-10 text-xl font-bold text-gray-900 mb-2">{product.name}</h3>
-                <p className={`relative z-10 text-2xl font-bold ${product.color} mb-3`}>{product.amount}</p>
-                
-                <div className="relative z-10 space-y-2 text-sm text-gray-600 mb-4">
-                  <p className="flex items-center gap-2">
-                    <span className={`inline-block w-2 h-2 rounded-full ${product.accent}`}></span>
-                    Rate: {product.rate}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span className={`inline-block w-2 h-2 rounded-full ${product.accent}`}></span>
-                    Term: {product.term}
-                  </p>
-                  <p className="text-gray-700 mt-3 pt-3 border-t border-gray-200">{product.description}</p>
-                </div>
-                
-                <Link 
-                  to="/register" 
-                  className={`relative z-10 inline-flex items-center ${product.color} font-medium hover:${product.color} group-hover:translate-x-1 transition-all duration-300`}
-                >
-                  Apply Now
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Loan Products Section - Same as LoanProducts page */}
+<section className="py-20 bg-white">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="text-center mb-12">
+      <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Loan Products</h2>
+      <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        Choose from a variety of loan products designed to meet your financial needs.
+      </p>
+    </div>
 
+    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Personal Loan */}
+      <div className="bg-gray-50 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-t-4 border-blue-500">
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Personal Loan in NEOVAM GROUP</h3>
+        <p className="text-2xl font-bold text-blue-600 mb-3">Up to 1M TZS</p>
+        <div className="space-y-2 text-sm text-gray-600 mb-4">
+          <p>Rate: 10% - 15% APR</p>
+          <p>Term: 1 - 9 months</p>
+          <p className="text-gray-700 mt-3 pt-3 border-t border-gray-200">
+            For personal expenses, education, home improvement, and more.
+          </p>
+        </div>
+        <Link to="/register" className="inline-block w-full text-center text-blue-600 font-medium border border-blue-600 rounded-lg px-4 py-2 hover:bg-blue-50 transition-colors">
+          Apply Now
+        </Link>
+      </div>
+
+      {/* Business Loan */}
+      <div className="bg-gray-50 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-t-4 border-purple-500">
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Business Loan in NEOVAM GROUP</h3>
+        <p className="text-2xl font-bold text-purple-600 mb-3">Up to 5M TZS</p>
+        <div className="space-y-2 text-sm text-gray-600 mb-4">
+          <p>Rate: 15 - 20% APR</p>
+          <p>Term: 1 - 12 months</p>
+          <p className="text-gray-700 mt-3 pt-3 border-t border-gray-200">
+            Grow your business with flexible working capital and investment loans.
+          </p>
+        </div>
+        <Link to="/register" className="inline-block w-full text-center text-purple-600 font-medium border border-purple-600 rounded-lg px-4 py-2 hover:bg-purple-50 transition-colors">
+          Apply Now
+        </Link>
+      </div>
+
+      {/* Micro Loan */}
+      <div className="bg-gray-50 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-t-4 border-green-500">
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Micro Loan in NEOVAM GROUP</h3>
+        <p className="text-2xl font-bold text-green-600 mb-3">Up to 2M TZS</p>
+        <div className="space-y-2 text-sm text-gray-600 mb-4">
+          <p>Rate: 8% - 14% APR</p>
+          <p>Term: 1 - 12 months</p>
+          <p className="text-gray-700 mt-3 pt-3 border-t border-gray-200">
+            Quick and easy small loans for immediate financial needs.
+          </p>
+        </div>
+        <Link to="/register" className="inline-block w-full text-center text-green-600 font-medium border border-green-600 rounded-lg px-4 py-2 hover:bg-green-50 transition-colors">
+          Apply Now
+        </Link>
+      </div>
+
+      {/* Group Loan */}
+      <div className="bg-gray-50 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-t-4 border-orange-500">
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Group Loan in NEOVAM GROUP</h3>
+        <p className="text-2xl font-bold text-orange-600 mb-3">Up to 10M TZS</p>
+        <div className="space-y-2 text-sm text-gray-600 mb-4">
+          <p>Rate: 9% - 15% APR</p>
+          <p>Term: 6 - 24 months</p>
+          <p className="text-gray-700 mt-3 pt-3 border-t border-gray-200">
+            Perfect for community groups, SMEs, and cooperative members.
+          </p>
+        </div>
+        <Link to="/register" className="inline-block w-full text-center text-orange-600 font-medium border border-orange-600 rounded-lg px-4 py-2 hover:bg-orange-50 transition-colors">
+          Apply Now
+        </Link>
+      </div>
+    </div>
+  </div>
+</section>
       {/* CTA Section - No Icons */}
       <section className="py-20 bg-gradient-to-r from-primary-600 to-primary-700">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
