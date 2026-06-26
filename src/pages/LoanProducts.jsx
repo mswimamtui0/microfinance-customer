@@ -7,7 +7,7 @@ import PublicFooter from '../components/PublicFooter';
 const LoanProducts = () => {
   const products = [
     {
-      name: 'Personal Loan',
+      name: 'Personal Loan in NEOVAM GROUP',
       amount: 'Up to 1M TZS',
       rate: '10% - 15% APR',
       term: '1 - 9 months',
@@ -15,7 +15,7 @@ const LoanProducts = () => {
       color: 'blue'
     },
     {
-      name: 'Business Loan',
+      name: 'Business Loan in NEOVAM GROUP',
       amount: 'Up to 5M TZS',
       rate: '15 - 20% APR',
       term: '1 - 12 months',
@@ -23,7 +23,7 @@ const LoanProducts = () => {
       color: 'purple'
     },
     {
-      name: 'Micro Loan',
+      name: 'Micro Loan in NEOVAM GROUP',
       amount: 'Up to 2M TZS',
       rate: '8% - 14% APR',
       term: '1 - 12 months',
@@ -31,7 +31,7 @@ const LoanProducts = () => {
       color: 'green'
     },
     {
-      name: 'Group Loan',
+      name: 'Group Loan in NEOVAM GROUP',
       amount: 'Up to 10M TZS',
       rate: '9% - 15% APR',
       term: '6 - 24 months',
