@@ -11,6 +11,7 @@ import Register from './pages/Register';
 
 // Dashboard Pages
 import Dashboard from './pages/Dashboard';
+
 import ApplyLoan from './pages/ApplyLoan';
 import MyLoans from './pages/MyLoans';
 import PaymentHistory from './pages/PaymentHistory';
@@ -37,6 +38,7 @@ function App() {
             <Route path="/" element={<Homepage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             
             {/* Protected Routes */}
             <Route path="/dashboard" element={
