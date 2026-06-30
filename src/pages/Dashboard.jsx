@@ -14,12 +14,12 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!token) {
-      navigate('/login');
+      navigate('/dashboard');
       return;
     }
 
     if (!customer?.phone) {
-      navigate('/login');
+      navigate('/dashboard');
       return;
     }
 
