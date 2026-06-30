@@ -1,7 +1,6 @@
 // src/pages/Register.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../api';
 import toast from 'react-hot-toast';
 
@@ -26,17 +25,12 @@ const Register = () => {
     password: '',
     confirm_password: '',
   });
-  const { register, login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ============================================
-  // 🔧 TEMPORARY: Bypass OTP - Auto-verify
-  // Remove this after OTP is working
-  // ============================================
   const sendOTP = async () => {
     if (!formData.phone) {
       toast.error('Please enter your phone number');
@@ -45,7 +39,6 @@ const Register = () => {
 
     setLoading(true);
     try {
-      // Try to send OTP (if backend supports it)
       try {
         const response = await authAPI.sendOTP({
           phone: formData.phone,
@@ -56,7 +49,6 @@ const Register = () => {
           setOtpSent(true);
         }
       } catch (error) {
-        // If OTP fails, auto-verify anyway for testing
         console.warn('⚠️ OTP send failed, auto-verifying for testing...');
         toast.error('⚠️ OTP service unavailable. Auto-verifying for testing.', {
           duration: 3000,
@@ -72,7 +64,6 @@ const Register = () => {
     }
   };
 
-  // 🔧 TEMPORARY: Auto-verify OTP
   const verifyOTP = async () => {
     if (!otp) {
       toast.error('Please enter OTP');
@@ -92,7 +83,6 @@ const Register = () => {
         setStep(2);
       }
     } catch (error) {
-      // 🔧 TEMPORARY: Auto-verify if backend fails
       console.warn('⚠️ OTP verification failed, auto-verifying for testing...');
       toast.error('⚠️ OTP service unavailable. Auto-verifying for testing.', {
         duration: 3000,
@@ -104,88 +94,87 @@ const Register = () => {
     }
   };
 
-  // ============================================
-  // END OF TEMPORARY OTP BYPASS
-  // ============================================
-
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (formData.password !== formData.confirm_password) {
-    toast.error('Passwords do not match');
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const response = await authAPI.register(formData);
-    console.log('✅ Registration response:', response.data);
+    e.preventDefault();
     
-    if (response.data.success || response.status === 201) {
-      toast.success('Registration successful! 🎉');
-      // ... redirect logic
+    if (formData.password !== formData.confirm_password) {
+      toast.error('Passwords do not match');
+      return;
     }
-  } catch (error) {
-    console.error('❌ Registration error:', error);
-    
-    if (error.response) {
-      const data = error.response.data;
-      console.log('🔴 Full Error Response:', data);
+
+    setLoading(true);
+    try {
+      const response = await authAPI.register(formData);
+      console.log('✅ Registration response:', response.data);
       
-      // 🔥 Check if errors exist and display them
-      if (data.errors) {
-        // Loop through all validation errors
-        const errorMessages = [];
-        Object.keys(data.errors).forEach(field => {
-          const messages = data.errors[field];
-          if (Array.isArray(messages)) {
-            messages.forEach(msg => {
-              const errorMsg = `${field}: ${msg}`;
+      if (response.data.success || response.status === 201) {
+        toast.success('Registration successful! 🎉');
+        
+        // Auto-login after registration
+        try {
+          const loginResponse = await authAPI.login({
+            username: formData.phone,
+            password: formData.password
+          });
+          
+          if (loginResponse.data.tokens) {
+            localStorage.setItem('customer_token', loginResponse.data.tokens.access);
+            localStorage.setItem('customer', JSON.stringify(loginResponse.data.customer));
+            toast.success('Welcome! Redirecting to dashboard...');
+            setTimeout(() => navigate('/dashboard'), 1000);
+          } else {
+            navigate('/login');
+          }
+        } catch (loginError) {
+          console.error('Auto-login failed:', loginError);
+          toast.success('Please login with your credentials');
+          setTimeout(() => navigate('/login'), 1000);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Registration error:', error);
+      
+      if (error.response) {
+        const data = error.response.data;
+        console.log('🔴 Full Error Response:', data);
+        
+        if (data.errors) {
+          const errorMessages = [];
+          Object.keys(data.errors).forEach(field => {
+            const messages = data.errors[field];
+            if (Array.isArray(messages)) {
+              messages.forEach(msg => {
+                const errorMsg = `${field}: ${msg}`;
+                errorMessages.push(errorMsg);
+                toast.error(errorMsg);
+              });
+            } else if (typeof messages === 'string') {
+              const errorMsg = `${field}: ${messages}`;
               errorMessages.push(errorMsg);
               toast.error(errorMsg);
-            });
-          } else if (typeof messages === 'string') {
-            const errorMsg = `${field}: ${messages}`;
-            errorMessages.push(errorMsg);
-            toast.error(errorMsg);
-          } else if (typeof messages === 'object') {
-            // Handle nested errors
-            Object.keys(messages).forEach(subField => {
-              const subMessages = messages[subField];
-              if (Array.isArray(subMessages)) {
-                subMessages.forEach(msg => {
-                  const errorMsg = `${field}.${subField}: ${msg}`;
-                  errorMessages.push(errorMsg);
-                  toast.error(errorMsg);
-                });
-              }
-            });
+            }
+          });
+          
+          if (errorMessages.length === 0) {
+            toast.error('Validation failed. Please check your inputs.');
           }
-        });
-        
-        if (errorMessages.length === 0) {
-          toast.error('Validation failed. Please check your inputs.');
+        } else if (data.error) {
+          toast.error(data.error);
+        } else if (data.message) {
+          toast.error(data.message);
+        } else {
+          toast.error('Server error. Please check your inputs.');
         }
-      } else if (data.error) {
-        toast.error(data.error);
-      } else if (data.message) {
-        toast.error(data.message);
-      } else if (data.detail) {
-        toast.error(data.detail);
+      } else if (error.request) {
+        toast.error('Network error. Please check your internet connection.');
       } else {
-        toast.error('Server error. Please check your inputs.');
+        toast.error(error.message || 'Registration failed. Please try again.');
       }
-    } else if (error.request) {
-      toast.error('Network error. Please check your internet connection.');
-    } else {
-      toast.error(error.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-  // 🔧 TEMPORARY: Skip OTP function (fixed - no toast.info)
   const skipOTP = () => {
     toast.success('⚠️ Skipping OTP verification (Testing mode)', {
       duration: 3000,
@@ -222,7 +211,6 @@ const Register = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium text-gray-900">Verify Your Phone</h3>
-                {/* 🔧 TEMPORARY: Skip OTP button */}
                 <button
                   type="button"
                   onClick={skipOTP}
