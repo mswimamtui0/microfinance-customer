@@ -68,6 +68,124 @@ export const authAPI = {
     console.log('🏢 Fetching branches');
     return api.get('/branches/');
   },
+  profile: (phone) => {
+    console.log('👤 Getting profile for:', phone);
+    return api.get('/customer/profile/', { params: { phone } });
+  },
+  updateProfile: (data) => {
+    console.log('✏️ Updating profile:', data);
+    return api.put('/customer/update_profile/', data);
+  },
+  changePassword: (data) => {
+    console.log('🔑 Changing password');
+    return api.post('/customer/change_password/', data);
+  },
+  forgotPassword: (data) => {
+    console.log('🔐 Forgot password for:', data);
+    return api.post('/customer/forgot_password/', data);
+  },
+  resetPassword: (data) => {
+    console.log('🔄 Resetting password');
+    return api.post('/customer/reset_password/', data);
+  },
+};
+
+// ============================================
+// CUSTOMER API
+// ============================================
+export const customerAPI = {
+  dashboard: (phone) => {
+    console.log('📊 Getting dashboard for:', phone);
+    return api.get('/customer/dashboard/', { params: { phone } });
+  },
+  applyLoan: (data) => {
+    console.log('💰 Applying for loan:', data);
+    return api.post('/customer/apply_loan/', data);
+  },
+  getLoans: (phone) => {
+    console.log('📋 Getting loans for:', phone);
+    return api.get('/customer/loans/', { params: { phone } });
+  },
+  getLoanDetail: (id, phone) => {
+    console.log('📋 Getting loan detail:', id);
+    return api.get(`/customer/loan_detail/${id}/`, { params: { phone } });
+  },
+  getPayments: (phone) => {
+    console.log('💳 Getting payments for:', phone);
+    return api.get('/customer/payment_history/', { params: { phone } });
+  },
+  getApplications: (phone) => {
+    console.log('📋 Getting applications for:', phone);
+    return api.get('/customer/applications/', { params: { phone } });
+  },
+  trackApplication: (id, phone) => {
+    console.log('📋 Tracking application:', id);
+    return api.get(`/customer/track_application/${id}/`, { params: { phone } });
+  },
+  loanCalculator: (params) => {
+    console.log('🧮 Calculating loan:', params);
+    return api.get('/customer/loan_calculator/', { params });
+  },
+  getGuarantors: (phone) => {
+    console.log('👨‍👩‍👦 Getting guarantors for:', phone);
+    return api.get('/customer/guarantors/', { params: { phone } });
+  },
+  addGuarantor: (data) => {
+    console.log('➕ Adding guarantor:', data);
+    return api.post('/customer/add_guarantor/', data);
+  },
+};
+
+// ============================================
+// LOAN PRODUCTS API
+// ============================================
+export const productAPI = {
+  getAll: (params) => {
+    console.log('📦 Getting loan products');
+    return api.get('/loan-products/', { params });
+  },
+  getById: (id) => {
+    console.log('📦 Getting product:', id);
+    return api.get(`/loan-products/${id}/`);
+  },
+};
+
+// ============================================
+// CUSTOMER PORTAL API (for compatibility)
+// ============================================
+export const customerPortalAPI = {
+  register: (data) => {
+    console.log('📝 Customer registration:', data);
+    return api.post('/customer/auth/register/', data);
+  },
+  login: (credentials) => {
+    console.log('🔐 Customer login:', credentials);
+    return api.post('/customer/auth/login/', credentials);
+  },
+  sendOTP: (data) => {
+    console.log('📱 Send OTP:', data);
+    return api.post('/customer/auth/send_otp/', data);
+  },
+  verifyOTP: (data) => {
+    console.log('✅ Verify OTP:', data);
+    return api.post('/customer/auth/verify_otp/', data);
+  },
+  dashboard: (phone) => {
+    console.log('📊 Get customer dashboard:', phone);
+    return api.get('/customer/dashboard/', { params: { phone } });
+  },
+  applyLoan: (data) => {
+    console.log('💰 Apply for loan:', data);
+    return api.post('/customer/apply_loan/', data);
+  },
+  getLoans: (phone) => {
+    console.log('📋 Get customer loans:', phone);
+    return api.get('/customer/loans/', { params: { phone } });
+  },
+  getPayments: (phone) => {
+    console.log('💳 Get customer payments:', phone);
+    return api.get('/customer/payment_history/', { params: { phone } });
+  },
 };
 
 export default api;
