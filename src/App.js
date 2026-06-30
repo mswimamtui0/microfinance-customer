@@ -14,6 +14,7 @@ import Contact from './pages/Contact';
 
 // Dashboard Pages
 import Dashboard from './pages/Dashboard';
+
 import Profile from './pages/Profile';
 import Applications from './pages/Applications';
 import ApplyLoan from './pages/ApplyLoan';
@@ -37,6 +38,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             
             {/* Protected Routes */}
             <Route path="/dashboard" element={
