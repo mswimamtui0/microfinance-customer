@@ -120,77 +120,76 @@ const Register = () => {
       console.log('📝 Submitting registration:', formData);
       
       const response = await authAPI.register(formData);
-      console.log('✅ Registration response:', response.data);
+      console.log('✅ Registration response:', response);
+      console.log('✅ Registration data:', response.data);
       
-      if (response.data.success || response.status === 201) {
-        toast.success('Usajili umefanikiwa! 🎉');
-        
-        // ✅ AUTO-LOGIN after registration
-        try {
-          const loginResponse = await authAPI.login({
-            username: formData.phone,
-            password: formData.password
-          });
+      // ✅ Check for success
+      if (response.status === 201 || response.status === 200) {
+        if (response.data.success === true) {
+          toast.success('Usajili umefanikiwa! 🎉');
           
-          console.log('✅ Auto-login response:', loginResponse.data);
-          
-          if (loginResponse.data.tokens) {
-            // Save tokens
-            localStorage.setItem('customer_token', loginResponse.data.tokens.access);
-            localStorage.setItem('refresh_token', loginResponse.data.tokens.refresh);
+          // ✅ Auto-login after registration
+          try {
+            const loginResponse = await authAPI.login({
+              username: formData.phone,
+              password: formData.password
+            });
             
-            // Save customer data
-            if (loginResponse.data.customer) {
+            console.log('✅ Auto-login response:', loginResponse.data);
+            
+            if (loginResponse.data.tokens) {
+              localStorage.setItem('customer_token', loginResponse.data.tokens.access);
+              localStorage.setItem('refresh_token', loginResponse.data.tokens.refresh);
               localStorage.setItem('customer', JSON.stringify(loginResponse.data.customer));
+              
+              toast.success('Karibu! Unaelekezwa kwenye dashibodi...');
+              setTimeout(() => {
+                navigate('/dashboard');
+              }, 500);
+            } else {
+              toast.info('Tafadhali ingia kwa akaunti yako');
+              setTimeout(() => {
+                navigate('/login');
+              }, 1000);
             }
-            
-            toast.success('Karibu! Unaelekezwa kwenye dashibodi...');
-            
-            // ✅ Redirect to dashboard immediately
-            setTimeout(() => {
-              navigate('/dashboard');
-            }, 500);
-          } else if (loginResponse.data.access) {
-            localStorage.setItem('customer_token', loginResponse.data.access);
-            toast.success('Karibu! Unaelekezwa kwenye dashibodi...');
-            setTimeout(() => {
-              navigate('/dashboard');
-            }, 500);
-          } else {
-            // If auto-login fails, redirect to login page
-            toast.info('Tafadhali ingia kwa akaunti yako');
+          } catch (loginError) {
+            console.error('❌ Auto-login failed:', loginError);
+            toast.info('Usajili umefanikiwa! Tafadhali ingia');
             setTimeout(() => {
               navigate('/login');
             }, 1000);
           }
-        } catch (loginError) {
-          console.error('❌ Auto-login failed:', loginError);
-          toast.info('Usajili umefanikiwa! Tafadhali ingia');
-          setTimeout(() => {
-            navigate('/login');
-          }, 1000);
+        } else {
+          // ✅ Show validation errors from backend
+          if (response.data.errors) {
+            const errors = response.data.errors;
+            Object.keys(errors).forEach(key => {
+              const messages = errors[key];
+              if (Array.isArray(messages)) {
+                messages.forEach(msg => toast.error(`${key}: ${msg}`));
+              } else {
+                toast.error(`${key}: ${messages}`);
+              }
+            });
+          } else {
+            toast.error(response.data.message || 'Usajili umeshindwa. Tafadhali jaribu tena.');
+          }
         }
       } else {
-        // Show validation errors
-        if (response.data.errors) {
-          Object.keys(response.data.errors).forEach(key => {
-            const messages = response.data.errors[key];
-            if (Array.isArray(messages)) {
-              messages.forEach(msg => toast.error(`${key}: ${msg}`));
-            } else {
-              toast.error(`${key}: ${messages}`);
-            }
-          });
-        } else {
-          toast.error('Usajili umeshindwa. Tafadhali jaribu tena.');
-        }
+        toast.error('Usajili umeshindwa. Tafadhali jaribu tena.');
       }
       
     } catch (error) {
       console.error('❌ Registration error:', error);
+      console.error('❌ Error response:', error.response);
+      console.error('❌ Error data:', error.response?.data);
       
+      // ✅ Show detailed error
       if (error.response) {
         const data = error.response.data;
+        console.log('📋 Error status:', error.response.status);
+        console.log('📋 Error data:', data);
+        
         if (data.errors) {
           Object.keys(data.errors).forEach(key => {
             const messages = data.errors[key];
@@ -204,6 +203,10 @@ const Register = () => {
           toast.error(data.error);
         } else if (data.message) {
           toast.error(data.message);
+        } else if (data.detail) {
+          toast.error(data.detail);
+        } else if (data.non_field_errors) {
+          toast.error(data.non_field_errors[0]);
         } else {
           toast.error('Usajili umeshindwa. Tafadhali jaribu tena.');
         }
