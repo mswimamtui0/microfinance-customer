@@ -2,7 +2,8 @@
 import axios from 'axios';
 
 // ✅ Use Render backend URL
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API_URL = 'https://microfinance-s03r.onrender.com/api/';
+// const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 console.log('🔗 API URL:', API_URL);
 
