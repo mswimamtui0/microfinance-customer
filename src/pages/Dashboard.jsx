@@ -12,23 +12,32 @@ const Dashboard = () => {
   const customer = JSON.parse(localStorage.getItem('customer') || '{}');
   const token = localStorage.getItem('customer_token');
 
+  // ✅ Debug: Log what's in localStorage
+  console.log('🔍 Token:', token);
+  console.log('🔍 Customer:', customer);
+
   useEffect(() => {
+    // ✅ FIX: Redirect to login, NOT dashboard!
     if (!token) {
-      navigate('/dashboard');
+      console.log('❌ No token found, redirecting to login');
+      navigate('/login');
       return;
     }
 
     if (!customer?.phone) {
-      navigate('/dashboard');
+      console.log('❌ No phone found, redirecting to login');
+      navigate('/login');
       return;
     }
 
     const fetchDashboard = async () => {
       try {
+        console.log('📊 Fetching dashboard for:', customer.phone);
         const response = await customerAPI.dashboard(customer.phone);
+        console.log('📊 Dashboard data:', response.data);
         setDashboardData(response.data);
       } catch (error) {
-        console.error('Error fetching dashboard:', error);
+        console.error('❌ Error fetching dashboard:', error);
         toast.error('Failed to load dashboard');
       } finally {
         setLoading(false);
