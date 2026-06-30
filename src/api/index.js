@@ -1,10 +1,10 @@
+// src/api/index.js
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
-// src/api/index.js
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
-console.log('🔗 API URL:', API_URL); // ✅ Add this to debug
-console.log('🔗 Customer Portal API URL:', API_URL);
+// ✅ FORCE the live URL
+const API_URL = 'https://microfinance-neovam.vercel.app/api';
+
+console.log('🔗 API URL:', API_URL);
 
 const api = axios.create({
   baseURL: API_URL,
@@ -13,6 +13,8 @@ const api = axios.create({
   },
   timeout: 30000,
 });
+
+// ... rest of your code
 
 // Add token to requests
 api.interceptors.request.use(
