@@ -36,45 +36,53 @@ const Login = () => {
         password: formData.password
       });
       
-      console.log('📥 Full Login Response:', response);
       console.log('📥 Login response data:', response.data);
       
       // ✅ Check if login was successful
       if (response.status === 200 || response.status === 201) {
-        // ✅ Save tokens
+        // ✅ Get tokens from the correct location
+        let accessToken = null;
+        let refreshToken = null;
+        let customerData = null;
+        
+        // Check response structure
         if (response.data.tokens) {
-          localStorage.setItem('customer_token', response.data.tokens.access);
-          localStorage.setItem('refresh_token', response.data.tokens.refresh);
-          console.log('✅ Tokens saved to localStorage');
+          accessToken = response.data.tokens.access;
+          refreshToken = response.data.tokens.refresh;
+          console.log('✅ Tokens found in response.data.tokens');
         } else if (response.data.access) {
-          localStorage.setItem('customer_token', response.data.access);
-          if (response.data.refresh) {
-            localStorage.setItem('refresh_token', response.data.refresh);
-          }
-          console.log('✅ Access token saved');
+          accessToken = response.data.access;
+          refreshToken = response.data.refresh;
+          console.log('✅ Tokens found in response.data directly');
         } else {
-          console.warn('⚠️ No tokens found in response');
+          console.warn('⚠️ No tokens found in response:', response.data);
           toast.error('Login failed: No tokens received');
           setLoading(false);
           return;
         }
         
-        // ✅ Save customer data
-        if (response.data.customer) {
-          localStorage.setItem('customer', JSON.stringify(response.data.customer));
-          console.log('✅ Customer data saved:', response.data.customer);
-        } else if (response.data.user) {
-          localStorage.setItem('customer', JSON.stringify(response.data.user));
-          console.log('✅ User data saved:', response.data.user);
-        } else {
-          console.warn('⚠️ No customer data found');
+        // ✅ Save tokens
+        if (accessToken) {
+          localStorage.setItem('customer_token', accessToken);
+          console.log('✅ Access token saved:', accessToken.substring(0, 20) + '...');
         }
         
-        // ✅ Verify tokens were saved
-        const savedToken = localStorage.getItem('customer_token');
-        const savedCustomer = localStorage.getItem('customer');
-        console.log('🔍 Verifying saved data - Token:', !!savedToken, 'Customer:', !!savedCustomer);
+        if (refreshToken) {
+          localStorage.setItem('refresh_token', refreshToken);
+          console.log('✅ Refresh token saved');
+        }
         
+        // ✅ Save customer data
+        if (response.data.customer) {
+          customerData = response.data.customer;
+          localStorage.setItem('customer', JSON.stringify(customerData));
+          console.log('✅ Customer data saved:', customerData);
+        } else {
+          console.warn('⚠️ No customer data found in response');
+        }
+        
+        // ✅ Verify token was saved
+        const savedToken = localStorage.getItem('customer_token');
         if (!savedToken) {
           toast.error('Login failed: Token not saved');
           setLoading(false);
@@ -82,9 +90,8 @@ const Login = () => {
         }
         
         toast.success('Karibu! 🎉');
-        
-        // ✅ Redirect to dashboard
         console.log('🔄 Redirecting to dashboard...');
+        
         setTimeout(() => {
           navigate('/dashboard');
         }, 500);
@@ -93,31 +100,24 @@ const Login = () => {
       }
       
     } catch (error) {
-      console.error('❌ Login error details:', error);
+      console.error('❌ Login error:', error);
       
       if (error.response) {
         const data = error.response.data;
-        console.log('📋 Error response status:', error.response.status);
-        console.log('📋 Error response data:', data);
+        console.log('📋 Error response:', data);
         
         if (data.error) {
           toast.error(data.error);
         } else if (data.message) {
           toast.error(data.message);
-        } else if (data.detail) {
-          toast.error(data.detail);
-        } else if (data.non_field_errors) {
-          toast.error(data.non_field_errors[0]);
         } else if (error.response.status === 401) {
           toast.error('Nambari ya simu au nenosiri si sahihi');
         } else {
           toast.error('Kuna hitilafu. Tafadhali jaribu tena.');
         }
       } else if (error.request) {
-        console.error('No response from server:', error.request);
         toast.error('Hitilafu ya mtandao. Tafadhali angalia muunganisho wako.');
       } else {
-        console.error('Error setting up request:', error.message);
         toast.error('Login failed. Please try again.');
       }
     } finally {
