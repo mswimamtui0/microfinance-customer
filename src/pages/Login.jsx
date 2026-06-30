@@ -41,50 +41,46 @@ const Login = () => {
       
       // ✅ Check if login was successful
       if (response.status === 200 || response.status === 201) {
-        // Check for tokens in different formats
-        let accessToken = null;
-        let refreshToken = null;
-        let customerData = null;
-        
-        // Try different response formats
+        // ✅ Save tokens
         if (response.data.tokens) {
-          accessToken = response.data.tokens.access;
-          refreshToken = response.data.tokens.refresh;
-          customerData = response.data.customer;
+          localStorage.setItem('customer_token', response.data.tokens.access);
+          localStorage.setItem('refresh_token', response.data.tokens.refresh);
+          console.log('✅ Tokens saved to localStorage');
         } else if (response.data.access) {
-          accessToken = response.data.access;
-          refreshToken = response.data.refresh;
-          customerData = response.data.customer || response.data.user;
-        } else if (response.data.token) {
-          accessToken = response.data.token;
-          customerData = response.data.customer || response.data.user;
+          localStorage.setItem('customer_token', response.data.access);
+          if (response.data.refresh) {
+            localStorage.setItem('refresh_token', response.data.refresh);
+          }
+          console.log('✅ Access token saved');
         } else {
-          // If no tokens found, try to use the whole response as customer
-          customerData = response.data;
-        }
-        
-        // ✅ Save tokens if they exist
-        if (accessToken) {
-          localStorage.setItem('customer_token', accessToken);
-          console.log('✅ Access token saved:', accessToken.substring(0, 20) + '...');
-        } else {
-          console.warn('⚠️ No access token found in response');
-        }
-        
-        if (refreshToken) {
-          localStorage.setItem('refresh_token', refreshToken);
-          console.log('✅ Refresh token saved');
+          console.warn('⚠️ No tokens found in response');
+          toast.error('Login failed: No tokens received');
+          setLoading(false);
+          return;
         }
         
         // ✅ Save customer data
-        if (customerData) {
-          localStorage.setItem('customer', JSON.stringify(customerData));
-          console.log('✅ Customer data saved:', customerData);
+        if (response.data.customer) {
+          localStorage.setItem('customer', JSON.stringify(response.data.customer));
+          console.log('✅ Customer data saved:', response.data.customer);
+        } else if (response.data.user) {
+          localStorage.setItem('customer', JSON.stringify(response.data.user));
+          console.log('✅ User data saved:', response.data.user);
         } else {
-          console.warn('⚠️ No customer data found in response');
+          console.warn('⚠️ No customer data found');
         }
         
-        // ✅ Show success message
+        // ✅ Verify tokens were saved
+        const savedToken = localStorage.getItem('customer_token');
+        const savedCustomer = localStorage.getItem('customer');
+        console.log('🔍 Verifying saved data - Token:', !!savedToken, 'Customer:', !!savedCustomer);
+        
+        if (!savedToken) {
+          toast.error('Login failed: Token not saved');
+          setLoading(false);
+          return;
+        }
+        
         toast.success('Karibu! 🎉');
         
         // ✅ Redirect to dashboard
@@ -114,8 +110,6 @@ const Login = () => {
           toast.error(data.non_field_errors[0]);
         } else if (error.response.status === 401) {
           toast.error('Nambari ya simu au nenosiri si sahihi');
-        } else if (error.response.status === 403) {
-          toast.error('Akaunti yako imezuiwa. Wasiliana na msaidizi.');
         } else {
           toast.error('Kuna hitilafu. Tafadhali jaribu tena.');
         }
