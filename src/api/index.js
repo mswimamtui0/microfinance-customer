@@ -3,6 +3,10 @@ import axios from 'axios';
 
 // ✅ Only ONE declaration - use Render backend URL
 const API_URL = 'https://microfinance-s03r.onrender.com/api';
+// src/api/index.js
+
+// ✅ CHANGE THIS
+const API_URL = 'https://microfinance-s03r.onrender.com/api';
 
 console.log('🔗 API URL:', API_URL);
 
