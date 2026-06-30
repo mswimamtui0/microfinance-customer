@@ -1,6 +1,6 @@
 // src/pages/Register.jsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../api';
 import toast from 'react-hot-toast';
 
@@ -33,7 +33,7 @@ const Register = () => {
 
   const sendOTP = async () => {
     if (!formData.phone) {
-      toast.error('Please enter your phone number');
+      toast.error('Tafadhali ingiza nambari ya simu');
       return;
     }
 
@@ -45,7 +45,7 @@ const Register = () => {
           purpose: 'registration'
         });
         if (response.data.message) {
-          toast.success('OTP sent to your phone!');
+          toast.success('OTP imetumwa kwenye simu yako!');
           setOtpSent(true);
         }
       } catch (error) {
@@ -55,7 +55,7 @@ const Register = () => {
         });
         setOtpVerified(true);
         setStep(2);
-        toast.success('Phone verified! (Testing mode)');
+        toast.success('Simu imethibitishwa! (Testing mode)');
       }
     } catch (error) {
       toast.error('Failed to verify phone. Please try again.');
@@ -66,7 +66,7 @@ const Register = () => {
 
   const verifyOTP = async () => {
     if (!otp) {
-      toast.error('Please enter OTP');
+      toast.error('Tafadhali ingiza OTP');
       return;
     }
 
@@ -78,7 +78,7 @@ const Register = () => {
         purpose: 'registration'
       });
       if (response.data.verified) {
-        toast.success('OTP verified!');
+        toast.success('OTP imethibitishwa!');
         setOtpVerified(true);
         setStep(2);
       }
@@ -94,93 +94,127 @@ const Register = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (formData.password !== formData.confirm_password) {
-      toast.error('Passwords do not match');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await authAPI.register(formData);
-      console.log('✅ Registration response:', response.data);
-      
-      if (response.data.success || response.status === 201) {
-        toast.success('Registration successful! 🎉');
-        
-        // Auto-login after registration
-        try {
-          const loginResponse = await authAPI.login({
-            username: formData.phone,
-            password: formData.password
-          });
-          
-          if (loginResponse.data.tokens) {
-            localStorage.setItem('customer_token', loginResponse.data.tokens.access);
-            localStorage.setItem('customer', JSON.stringify(loginResponse.data.customer));
-            toast.success('Welcome! Redirecting to dashboard...');
-            setTimeout(() => navigate('/dashboard'), 1000);
-          } else {
-            navigate('/login');
-          }
-        } catch (loginError) {
-          console.error('Auto-login failed:', loginError);
-          toast.success('Please login with your credentials');
-          setTimeout(() => navigate('/login'), 1000);
-        }
-      }
-    } catch (error) {
-      console.error('❌ Registration error:', error);
-      
-      if (error.response) {
-        const data = error.response.data;
-        console.log('🔴 Full Error Response:', data);
-        
-        if (data.errors) {
-          const errorMessages = [];
-          Object.keys(data.errors).forEach(field => {
-            const messages = data.errors[field];
-            if (Array.isArray(messages)) {
-              messages.forEach(msg => {
-                const errorMsg = `${field}: ${msg}`;
-                errorMessages.push(errorMsg);
-                toast.error(errorMsg);
-              });
-            } else if (typeof messages === 'string') {
-              const errorMsg = `${field}: ${messages}`;
-              errorMessages.push(errorMsg);
-              toast.error(errorMsg);
-            }
-          });
-          
-          if (errorMessages.length === 0) {
-            toast.error('Validation failed. Please check your inputs.');
-          }
-        } else if (data.error) {
-          toast.error(data.error);
-        } else if (data.message) {
-          toast.error(data.message);
-        } else {
-          toast.error('Server error. Please check your inputs.');
-        }
-      } else if (error.request) {
-        toast.error('Network error. Please check your internet connection.');
-      } else {
-        toast.error(error.message || 'Registration failed. Please try again.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const skipOTP = () => {
     toast.success('⚠️ Skipping OTP verification (Testing mode)', {
       duration: 3000,
     });
     setOtpVerified(true);
     setStep(2);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (formData.password !== formData.confirm_password) {
+      toast.error('Manenosiri hayafanani');
+      return;
+    }
+
+    if (!formData.phone || !formData.first_name || !formData.last_name || !formData.password) {
+      toast.error('Tafadhali jaza sehemu zote zinazohitajika');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log('📝 Submitting registration:', formData);
+      
+      const response = await authAPI.register(formData);
+      console.log('✅ Registration response:', response.data);
+      
+      if (response.data.success || response.status === 201) {
+        toast.success('Usajili umefanikiwa! 🎉');
+        
+        // ✅ AUTO-LOGIN after registration
+        try {
+          const loginResponse = await authAPI.login({
+            username: formData.phone,
+            password: formData.password
+          });
+          
+          console.log('✅ Auto-login response:', loginResponse.data);
+          
+          if (loginResponse.data.tokens) {
+            // Save tokens
+            localStorage.setItem('customer_token', loginResponse.data.tokens.access);
+            localStorage.setItem('refresh_token', loginResponse.data.tokens.refresh);
+            
+            // Save customer data
+            if (loginResponse.data.customer) {
+              localStorage.setItem('customer', JSON.stringify(loginResponse.data.customer));
+            }
+            
+            toast.success('Karibu! Unaelekezwa kwenye dashibodi...');
+            
+            // ✅ Redirect to dashboard immediately
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 500);
+          } else if (loginResponse.data.access) {
+            localStorage.setItem('customer_token', loginResponse.data.access);
+            toast.success('Karibu! Unaelekezwa kwenye dashibodi...');
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 500);
+          } else {
+            // If auto-login fails, redirect to login page
+            toast.info('Tafadhali ingia kwa akaunti yako');
+            setTimeout(() => {
+              navigate('/login');
+            }, 1000);
+          }
+        } catch (loginError) {
+          console.error('❌ Auto-login failed:', loginError);
+          toast.info('Usajili umefanikiwa! Tafadhali ingia');
+          setTimeout(() => {
+            navigate('/login');
+          }, 1000);
+        }
+      } else {
+        // Show validation errors
+        if (response.data.errors) {
+          Object.keys(response.data.errors).forEach(key => {
+            const messages = response.data.errors[key];
+            if (Array.isArray(messages)) {
+              messages.forEach(msg => toast.error(`${key}: ${msg}`));
+            } else {
+              toast.error(`${key}: ${messages}`);
+            }
+          });
+        } else {
+          toast.error('Usajili umeshindwa. Tafadhali jaribu tena.');
+        }
+      }
+      
+    } catch (error) {
+      console.error('❌ Registration error:', error);
+      
+      if (error.response) {
+        const data = error.response.data;
+        if (data.errors) {
+          Object.keys(data.errors).forEach(key => {
+            const messages = data.errors[key];
+            if (Array.isArray(messages)) {
+              messages.forEach(msg => toast.error(`${key}: ${msg}`));
+            } else {
+              toast.error(`${key}: ${messages}`);
+            }
+          });
+        } else if (data.error) {
+          toast.error(data.error);
+        } else if (data.message) {
+          toast.error(data.message);
+        } else {
+          toast.error('Usajili umeshindwa. Tafadhali jaribu tena.');
+        }
+      } else if (error.request) {
+        toast.error('Hitilafu ya mtandao. Tafadhali angalia muunganisho wako.');
+      } else {
+        toast.error('Usajili umeshindwa. Tafadhali jaribu tena.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -190,8 +224,8 @@ const Register = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-2xl mb-4">
             <span className="text-white text-3xl font-bold">M</span>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
-          <p className="mt-2 text-gray-600">Register to access loans</p>
+          <h2 className="text-3xl font-bold text-gray-900">Unda Akaunti</h2>
+          <p className="mt-2 text-gray-600">Jisajili kupata mikopo</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
@@ -210,18 +244,18 @@ const Register = () => {
           {step === 1 && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900">Verify Your Phone</h3>
+                <h3 className="text-lg font-medium text-gray-900">Thibitisha Nambari yako</h3>
                 <button
                   type="button"
                   onClick={skipOTP}
                   className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full hover:bg-yellow-200 transition-colors"
                 >
-                  ⚡ Skip OTP (Testing)
+                  ⚡ Ruka OTP (Testing)
                 </button>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                <label className="block text-sm font-medium text-gray-700">Nambari ya Simu</label>
                 <input
                   type="tel"
                   name="phone"
@@ -234,7 +268,7 @@ const Register = () => {
 
               {otpSent ? (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Enter OTP</label>
+                  <label className="block text-sm font-medium text-gray-700">Ingiza OTP</label>
                   <div className="mt-1 flex gap-2">
                     <input
                       type="text"
@@ -248,7 +282,7 @@ const Register = () => {
                       onClick={sendOTP}
                       className="px-4 py-2 text-sm font-medium text-primary-600 hover:text-primary-700"
                     >
-                      Resend
+                      Tuma Tena
                     </button>
                   </div>
                 </div>
@@ -259,7 +293,7 @@ const Register = () => {
                   disabled={loading}
                   className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors disabled:opacity-50"
                 >
-                  {loading ? 'Sending...' : 'Send OTP'}
+                  {loading ? 'Inatuma...' : 'Tuma OTP'}
                 </button>
               )}
 
@@ -270,13 +304,13 @@ const Register = () => {
                   disabled={loading}
                   className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors disabled:opacity-50"
                 >
-                  {loading ? 'Verifying...' : 'Verify OTP'}
+                  {loading ? 'Inathibitisha...' : 'Thibitisha OTP'}
                 </button>
               )}
 
               {otpVerified && (
                 <div className="text-center text-green-600 font-medium">
-                  ✅ Phone verified successfully!
+                  ✅ Nambari imethibitishwa!
                 </div>
               )}
             </div>
@@ -287,7 +321,7 @@ const Register = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">First Name *</label>
+                  <label className="block text-sm font-medium text-gray-700">Jina la Kwanza *</label>
                   <input
                     type="text"
                     name="first_name"
@@ -298,7 +332,7 @@ const Register = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Last Name *</label>
+                  <label className="block text-sm font-medium text-gray-700">Jina la Mwisho *</label>
                   <input
                     type="text"
                     name="last_name"
@@ -311,7 +345,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Email (Optional)</label>
+                <label className="block text-sm font-medium text-gray-700">Barua pepe (Hiari)</label>
                 <input
                   type="email"
                   name="email"
@@ -323,20 +357,20 @@ const Register = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Gender</label>
+                  <label className="block text-sm font-medium text-gray-700">Jinsia</label>
                   <select
                     name="gender"
                     value={formData.gender}
                     onChange={handleChange}
                     className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   >
-                    <option value="M">Male</option>
-                    <option value="F">Female</option>
-                    <option value="O">Other</option>
+                    <option value="M">Me</option>
+                    <option value="F">Ke</option>
+                    <option value="O">Nyingine</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Date of Birth *</label>
+                  <label className="block text-sm font-medium text-gray-700">Tarehe ya Kuzaliwa *</label>
                   <input
                     type="date"
                     name="date_of_birth"
@@ -349,7 +383,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">NIDA Number</label>
+                <label className="block text-sm font-medium text-gray-700">Namba ya NIDA</label>
                 <input
                   type="text"
                   name="nida_number"
@@ -361,7 +395,7 @@ const Register = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Region *</label>
+                  <label className="block text-sm font-medium text-gray-700">Mkoa *</label>
                   <input
                     type="text"
                     name="region"
@@ -372,7 +406,7 @@ const Register = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">District *</label>
+                  <label className="block text-sm font-medium text-gray-700">Wilaya *</label>
                   <input
                     type="text"
                     name="district"
@@ -385,7 +419,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Occupation *</label>
+                <label className="block text-sm font-medium text-gray-700">Kazi *</label>
                 <input
                   type="text"
                   name="occupation"
@@ -397,7 +431,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Monthly Income (TZS) *</label>
+                <label className="block text-sm font-medium text-gray-700">Mapato ya Mwezi (TZS) *</label>
                 <input
                   type="number"
                   name="monthly_income"
@@ -409,10 +443,10 @@ const Register = () => {
               </div>
 
               <div className="border-t border-gray-200 pt-6">
-                <h4 className="text-md font-medium text-gray-900 mb-4">Create Password</h4>
+                <h4 className="text-md font-medium text-gray-900 mb-4">Unda Nenosiri</h4>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Password *</label>
+                    <label className="block text-sm font-medium text-gray-700">Nenosiri *</label>
                     <input
                       type="password"
                       name="password"
@@ -422,10 +456,10 @@ const Register = () => {
                       minLength={8}
                       className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Minimum 8 characters</p>
+                    <p className="text-xs text-gray-500 mt-1">Lazima iwe na herufi 8 au zaidi</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Confirm Password *</label>
+                    <label className="block text-sm font-medium text-gray-700">Thibitisha Nenosiri *</label>
                     <input
                       type="password"
                       name="confirm_password"
@@ -443,7 +477,7 @@ const Register = () => {
                 disabled={loading}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors disabled:opacity-50"
               >
-                {loading ? 'Registering...' : 'Complete Registration'}
+                {loading ? 'Inasajili...' : 'Maliza Usajili'}
               </button>
             </form>
           )}
