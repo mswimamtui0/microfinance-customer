@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // ✅ HARDCODED - Render backend URL
-const API_URL = 'https://microfinance-s03r.onrender.com/api';
+const API_URL = 'https://microfinance-s03r.onrender.com/api/';
 
 console.log('🔗 API URL:', API_URL);
 
