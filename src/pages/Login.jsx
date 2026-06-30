@@ -39,33 +39,56 @@ const Login = () => {
       console.log('📥 Full Login Response:', response);
       console.log('📥 Login response data:', response.data);
       
-      // ✅ Check for successful login
+      // ✅ Check if login was successful
       if (response.status === 200 || response.status === 201) {
-        // Check if tokens exist in response
+        // Check for tokens in different formats
+        let accessToken = null;
+        let refreshToken = null;
+        let customerData = null;
+        
+        // Try different response formats
         if (response.data.tokens) {
-          // Save tokens
-          localStorage.setItem('customer_token', response.data.tokens.access);
-          localStorage.setItem('refresh_token', response.data.tokens.refresh);
-          console.log('✅ Tokens saved to localStorage');
+          accessToken = response.data.tokens.access;
+          refreshToken = response.data.tokens.refresh;
+          customerData = response.data.customer;
         } else if (response.data.access) {
-          // Alternative token format
-          localStorage.setItem('customer_token', response.data.access);
-          console.log('✅ Access token saved to localStorage');
+          accessToken = response.data.access;
+          refreshToken = response.data.refresh;
+          customerData = response.data.customer || response.data.user;
+        } else if (response.data.token) {
+          accessToken = response.data.token;
+          customerData = response.data.customer || response.data.user;
         } else {
-          console.warn('⚠️ No tokens found in response');
+          // If no tokens found, try to use the whole response as customer
+          customerData = response.data;
         }
         
-        // Save customer data
-        if (response.data.customer) {
-          localStorage.setItem('customer', JSON.stringify(response.data.customer));
-          console.log('✅ Customer data saved:', response.data.customer);
-        } else if (response.data.user) {
-          localStorage.setItem('customer', JSON.stringify(response.data.user));
+        // ✅ Save tokens if they exist
+        if (accessToken) {
+          localStorage.setItem('customer_token', accessToken);
+          console.log('✅ Access token saved:', accessToken.substring(0, 20) + '...');
+        } else {
+          console.warn('⚠️ No access token found in response');
         }
         
+        if (refreshToken) {
+          localStorage.setItem('refresh_token', refreshToken);
+          console.log('✅ Refresh token saved');
+        }
+        
+        // ✅ Save customer data
+        if (customerData) {
+          localStorage.setItem('customer', JSON.stringify(customerData));
+          console.log('✅ Customer data saved:', customerData);
+        } else {
+          console.warn('⚠️ No customer data found in response');
+        }
+        
+        // ✅ Show success message
         toast.success('Karibu! 🎉');
         
-        // Navigate to dashboard
+        // ✅ Redirect to dashboard
+        console.log('🔄 Redirecting to dashboard...');
         setTimeout(() => {
           navigate('/dashboard');
         }, 500);
@@ -76,13 +99,11 @@ const Login = () => {
     } catch (error) {
       console.error('❌ Login error details:', error);
       
-      // Handle different error cases
       if (error.response) {
         const data = error.response.data;
         console.log('📋 Error response status:', error.response.status);
         console.log('📋 Error response data:', data);
         
-        // Check for specific error messages
         if (data.error) {
           toast.error(data.error);
         } else if (data.message) {
@@ -95,8 +116,6 @@ const Login = () => {
           toast.error('Nambari ya simu au nenosiri si sahihi');
         } else if (error.response.status === 403) {
           toast.error('Akaunti yako imezuiwa. Wasiliana na msaidizi.');
-        } else if (error.response.status === 404) {
-          toast.error('Akaunti haipatikani. Tafadhali jisajili.');
         } else {
           toast.error('Kuna hitilafu. Tafadhali jaribu tena.');
         }
